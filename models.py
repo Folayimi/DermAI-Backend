@@ -3,8 +3,9 @@ from sqlalchemy import Column, String, Integer, create_engine
 from flask_sqlalchemy import SQLAlchemy
 import json
 
-database_name = "trivia"
-database_path = "postgresql://{}:{}@{}/{}".format('postgres','Florinfix$321','localhost:5432', database_name)
+database_name = "dermai"
+database_password = "Florinfix$321"
+database_path = "postgresql://{}:{}@{}/{}".format('postgres',database_password,'localhost:5432', database_name)
 
 db = SQLAlchemy()
 
@@ -20,23 +21,23 @@ def setup_db(app, database_path=database_path):
     db.create_all()
 
 '''
-Question
+User
 
 '''
-class Question(db.Model):  
-  __tablename__ = 'questions'
+class User(db.Model):  
+  __tablename__ = 'users'
 
   id = Column(Integer, primary_key=True)
-  question = Column(String)
-  answer = Column(String)
-  category = Column(String)
-  difficulty = Column(Integer)
+  firstname = Column(String, 30)
+  lastname = Column(String, 30)
+  email = Column(String)
+  password = Column(String)
 
-  def __init__(self, question, answer, category, difficulty):
-    self.question = question
-    self.answer = answer
-    self.category = category
-    self.difficulty = difficulty
+  def __init__(self, firstname, lastname, email, password):
+    self.firstname = firstname
+    self.lastname = lastname
+    self.email = email
+    self.password = password
 
   def insert(self):
     db.session.add(self)
@@ -55,27 +56,27 @@ class Question(db.Model):
   def format(self):
     return {
       'id': self.id,
-      'question': self.question,
-      'answer': self.answer,
-      'category': self.category,
-      'difficulty': self.difficulty
+      'firstname': self.firstname,
+      'lastname': self.lastname,
+      'email': self.email,
+      'password': self.password
     }
 
 '''
 Category
 
 '''
-class Category(db.Model):  
-  __tablename__ = 'categories'
+# class Category(db.Model):  
+#   __tablename__ = 'categories'
 
-  id = Column(Integer, primary_key=True)
-  type = Column(String)
+#   id = Column(Integer, primary_key=True)
+#   type = Column(String)
 
-  def __init__(self, type):
-    self.type = type
+#   def __init__(self, type):
+#     self.type = type
 
-  def format(self):
-    return {
-      'id': self.id,
-      'type': self.type
-    }
+#   def format(self):
+#     return {
+#       'id': self.id,
+#       'type': self.type
+#     }
