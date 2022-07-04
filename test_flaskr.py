@@ -4,7 +4,7 @@ import json
 from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app
-from models import setup_db, Question, Category
+from models import setup_db, User
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -34,155 +34,37 @@ class TriviaTestCase(unittest.TestCase):
     creates at least a test for each successful operation and for expected errors.
     """
     
-    def test_categories_request(self):
-        res = self.client().get('/categories')
+    def test_cofirm_user(self):
+        res = self.client().post('/getpassList', json={'email':"ridwanfolayimi@gmail.com", 'password':"Rinfinix"})
         data = json.loads(res.data)
         
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'],True)
-        self.assertTrue(data['categories'])
+        self.assertEqual(data['password'],'Rinfinix') 
+               
+    # def test_404_user_not_found(self):
+    #     res = self.client().post('/getpassList', json={'email':"ridwanfolayimi@gmail.com", 'password':"Rinfinix"})
+    #     data = json.loads(res.data)
+        
+    #     self.assertEqual(res.status_code, 404)
+    #     self.assertEqual(data['success'],False)
+    #     self.assertEqual(data['message'],'resource not found')        
     
-    def test_404_not_found_categoriesRequest_error(self):
-        res = self.client().get('/categoriesssyyy')
-        data = json.loads(res.data)
+    # def test_create_user(self):
+    #     res = self.client().post('/postUserDetails', json={'fullname':'Ridwan Ogunlade','email':"ridwanfolayimi@gmail.com", 'password':"Rinfinix"})
+    #     data = json.loads(res.data)
         
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'], 'resource not found')
+    #     self.assertEqual(res.status_code, 200)
+    #     self.assertEqual(data['delivered'],True)        
+               
+    # def test_422_bad_request(self):
+    #     res = self.client().post('/postUserDetails', json={})
+    #     data = json.loads(res.data)
         
-    def test_questions_request(self):
-        res = self.client().get('/questions')
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'],True)
-        self.assertTrue(data['questions'])
-        self.assertTrue(data['total_questions'])
-        self.assertTrue(data['categories'])
+    #     self.assertEqual(res.status_code, 422)
+    #     self.assertEqual(data['success'],False)
+    #     self.assertEqual(data['message'],'unprocessable')
     
-    def test_404_not_found_beyond_available_page(self):
-        res = self.client().get('/questions?page=1000')
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'], 'resource not found')
-        
-    def test_delete_question(self):
-        res = self.client().delete('/questions/11')
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertEqual(data['question_id'], 11)
-    
-    def test_404_question_not_found(self):
-        res = self.client().delete('/questions/1000')
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,404)
-        self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'],'resource not found')
-
-    def test_create_new_question(self):
-        res = self.client().post('/create/questions', json={
-            'question':'Which Project is Ridwan Currently working on?',
-            'answer':'Trivia API Project',
-            'category':'1',
-            'difficulty':'3'
-            })
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,200)
-        self.assertEqual(data['success'],True)    
-    
-    def test_422_unprocessable_null_value_error(self):
-        res = self.client().post('/create/questions', json={
-            'question':'Which Project is Ridwan Currently working on?',
-            'answer':'Trivia Api Project',            
-            'difficulty':'3'
-            })
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code, 422)
-        self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'],'unprocessable')
-    
-    def test_searched_questions(self):
-        res = self.client().post('/questions/search', json={'searchTerm':"movie"})
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,200)
-        self.assertEqual(data['success'],True)           
-        self.assertTrue(data['questions'])
-        self.assertTrue(data['total_questions'])
-        self.assertTrue(data['current_category'])
-    
-    def test_422_error_search_unprocessable(self):
-        res = self.client().post('/questions/search', json={'searchTerm':""})
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,422)
-        self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'],'unprocessable')
-    
-    def test_category_questions_success(self):
-        res = self.client().get('/categories/1/questions')
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,200)
-        self.assertEqual(data['success'],True)   
-        self.assertTrue(data['questions'])        
-        self.assertTrue(data['total_questions'])
-        self.assertEqual(data['current_category'],'Science')
-    
-    def test_404_bad_request_category_questions_(self):
-        res = self.client().get('/categories/something/questions')
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,404)
-        self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'],'resource not found')
-        
-    def test_400_bad_request_category_questions_(self):
-        res = self.client().get('/categories/1000/questions')
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,400)
-        self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'],'bad request')
-        
-    def test_quizz_questions_success(self):
-        res = self.client().post('/quizzes', json=
-                                {
-                                    'previous_questions':[],
-                                    'quiz_category':{'type':'Science','id':1}
-                                })
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,200)
-        self.assertEqual(data['success'],True)
-        self.assertTrue(data['question']['category'],'1')
-        
-    def test_404_quiz_resource_not_found_error(self):
-        res = self.client().post('/quizzes/something')
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,404)
-        self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'],'resource not found')
-        
-    def test_422_unprocessable_error(self):
-        res = self.client().post('/quizzes', json=
-                                {
-                                    'previous_questions':None,
-                                    'quiz_category':None
-                                })
-        data = json.loads(res.data)
-        
-        self.assertEqual(res.status_code,422)
-        self.assertEqual(data['success'],False)
-        self.assertEqual(data['message'],'unprocessable')
 
 
 # Make the tests conveniently executable

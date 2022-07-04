@@ -1,7 +1,6 @@
 import os
 import sys
 from select import select
-from tkinter.messagebox import QUESTION
 from unicodedata import category
 from xmlrpc.client import FastMarshaller
 from flask import (
@@ -15,8 +14,6 @@ from flask_cors import *
 from random import randint
 
 from models import setup_db, User
-
-QUESTIONS_PER_PAGE = 10
 
 def create_app(test_config=None):
   # create and configure the app
@@ -37,45 +34,47 @@ def create_app(test_config=None):
       )
     response.headers.add(
       'Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS'
-      )
-    response.headers.add(
-      'Access-Control-Allow-Credentials', 'true'
-      )                  
+      )                               
     return response
-  
-  def paginated_questions(request,response):
-    page = request.args.get("page", 1, type=int)       
-    start= (page-1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
-    questions = [question.format() for question in response]
-    selected_questions = questions[start:end]
-    return selected_questions
-    
-  
   
   '''
   Creates an endpoint to handle GET requests 
   for all available categories.
   '''
   @cross_origin
-  @app.route('/create/signup', methods=['POST'])
+  @app.route('/getpassList', methods=['POST'])
+  def confirm_user():
+    try:
+      request_data =request.get_json()
+      email = request_data.get('email',None)
+      user  = User.query.filter(User.email == email).one_or_none()
+      if user is None:        
+        abort(404)
+      else :
+        return jsonify({
+          "success":True,
+          "password":user.format()['password']
+        })      
+    except KeyError:
+      abort(404)
+      
+  @cross_origin
+  @app.route('/postUserDetails', methods=['POST'])
   def create_user():
     try:
       request_data = request.get_json()
-      firstname = request_data.get('firstname',None)
-      lastname = request_data.get('lastname',None)
+      fullname = request_data.get('fullname',None)      
       email = request_data.get('email',None)
       password = request_data.get('password',None)
-      if firstname and lastname and email and password:
+      if fullname and email and password:
         user = User(
-          firstname = firstname,
-          lastname = lastname,
+          fullname = fullname,          
           email = email,
           password = password
         )
         user.insert()
         return jsonify({
-          "success":True
+          "delivered":True
         })
       else:
         abort(422)

@@ -2,7 +2,7 @@ import os
 from sqlalchemy import Column, String, Integer, create_engine
 from flask_sqlalchemy import SQLAlchemy
 import json
-
+from flask_migrate import Migrate
 database_name = "dermai"
 database_password = "Florinfix$321"
 database_path = "postgresql://{}:{}@{}/{}".format('postgres',database_password,'localhost:5432', database_name)
@@ -19,6 +19,7 @@ def setup_db(app, database_path=database_path):
     db.app = app
     db.init_app(app)
     db.create_all()
+    migrate = Migrate(app,db)
 
 '''
 User
@@ -28,14 +29,12 @@ class User(db.Model):
   __tablename__ = 'users'
 
   id = Column(Integer, primary_key=True)
-  firstname = Column(String, 30)
-  lastname = Column(String, 30)
+  fullname = Column(String)  
   email = Column(String)
   password = Column(String)
 
-  def __init__(self, firstname, lastname, email, password):
-    self.firstname = firstname
-    self.lastname = lastname
+  def __init__(self, fullname, email, password):    
+    self.fullname = fullname
     self.email = email
     self.password = password
 
@@ -56,8 +55,7 @@ class User(db.Model):
   def format(self):
     return {
       'id': self.id,
-      'firstname': self.firstname,
-      'lastname': self.lastname,
+      'fullname': self.fullname,      
       'email': self.email,
       'password': self.password
     }
